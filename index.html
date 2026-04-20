@@ -33,8 +33,23 @@ header {
   transition: 0.2s;
 }
 
-.tabs button:hover {
-  background: #eee;
+.tabs button:hover { background: #eee; }
+
+.tabs button.activeTab {
+  background-color: #007bff;
+  color: white;
+}
+
+#delayTab.active {
+  background-color: red;
+  color: white;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
 }
 
 .notes-box {
@@ -51,9 +66,7 @@ textarea {
   font-size: 14px;
 }
 
-.actions {
-  margin-top: 5px;
-}
+.actions { margin-top: 5px; }
 
 button.copy {
   background: #28a745;
@@ -69,7 +82,6 @@ iframe {
   border: none;
 }
 </style>
-
 </head>
 
 <body>
@@ -79,18 +91,20 @@ iframe {
 </header>
 
 <div class="tabs">
-  <button onclick="loadTab('Direct to CSO.html')">Direct to CSO</button>
-  <button onclick="loadTab('Network Activation.html')">Network Activation</button>
-  <button onclick="loadTab('Check CPE SN Activity.html')">Check CPE</button>
-  <button onclick="loadTab('Home Visit De-activation.html')">MSAN Deactivation</button>
-  <button onclick="loadTab('Home Visit Grace Period.html')">Home Visit Grace</button>
-  <button onclick="loadTab('Home visit Dispatch.html')">Dispatch</button>
-  <button onclick="loadTab('Unreached Survey.html')">Unreached Survey</button>
-  <button onclick="loadTab('Survey De-activation.html')">Survey Deactivation</button>
-  <button onclick="loadTab('Survey grace period.html')">Survey Grace</button>
-  <button onclick="loadTab('Survey and Resurvey.html')">Survey</button>
-  <button onclick="loadTab('Customer readiness notification.html')">Readiness</button>
-  <button onclick="loadTab('Deactivated on CST 360.html')">CST360</button>
+  <button onclick="loadTab('Direct to CSO.html'); setActiveTab(this)">Direct to CSO</button>
+  <button onclick="loadTab('Network Activation.html'); setActiveTab(this)">Network Activation</button>
+  <button onclick="loadTab('Check CPE SN Activity.html'); setActiveTab(this)">Check CPE</button>
+  <button onclick="loadTab('Home Visit De-activation.html'); setActiveTab(this)">MSAN Deactivation</button>
+  <button onclick="loadTab('Home Visit Grace Period.html'); setActiveTab(this)">Home Visit Grace</button>
+  <button onclick="loadTab('Home visit Dispatch.html'); setActiveTab(this)">Dispatch</button>
+  <button onclick="loadTab('Unreached Survey.html'); setActiveTab(this)">Unreached Survey</button>
+  <button onclick="loadTab('Survey De-activation.html'); setActiveTab(this)">Survey Deactivation</button>
+  <button onclick="loadTab('Survey grace period.html'); setActiveTab(this)">Survey Grace</button>
+  <button onclick="loadTab('Survey and Resurvey.html'); setActiveTab(this)">Survey</button>
+  <button onclick="loadTab('Customer readiness notification.html'); setActiveTab(this)">Readiness</button>
+  <button onclick="loadTab('Deactivated on CST 360.html'); setActiveTab(this)">CST360</button>
+
+  <button id="delayTab" onclick="openDelay(); setActiveTab(this)">🚨 Delay Cases</button>
 </div>
 
 <div class="notes-box">
@@ -185,12 +199,9 @@ SLA: 5 Days`,
 };
 
 function loadTab(page) {
-
-  // save current
   localStorage.setItem(currentTab, document.getElementById("notes").value);
 
   currentTab = page;
-
   document.getElementById("frame").src = page;
 
   let saved = localStorage.getItem(page);
@@ -202,12 +213,43 @@ function loadTab(page) {
   }
 }
 
+function setActiveTab(button) {
+  let tabs = document.querySelectorAll(".tabs button");
+  tabs.forEach(btn => btn.classList.remove("activeTab"));
+  button.classList.add("activeTab");
+}
+
+function startDelayAlert() {
+  document.getElementById("delayTab").classList.add("active");
+}
+
+function stopDelayAlert() {
+  document.getElementById("delayTab").classList.remove("active");
+}
+
+function openDelay() {
+  localStorage.setItem(currentTab, document.getElementById("notes").value);
+
+  currentTab = "Delay Cases";
+
+  document.getElementById("frame").src = "updated_html_with_global_table_note.html";
+
+  document.getElementById("notes").value = "🚨 Monitoring Delay Cases...";
+
+  stopDelayAlert();
+}
+
 function copyNote() {
   let text = document.getElementById("notes");
   text.select();
   document.execCommand("copy");
   alert("Copied ✅");
 }
+
+setTimeout(() => {
+  startDelayAlert();
+}, 4000);
+
 </script>
 
 </body>
