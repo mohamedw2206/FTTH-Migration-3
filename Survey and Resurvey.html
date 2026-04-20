@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Survey SR Tool</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f2f2f2;
+  padding: 20px;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+}
+
+/* SR Box */
+.sr-container {
+  background: #e9e9e9;
+  padding: 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.highlight {
+  background: yellow;
+  padding: 4px 8px;
+  font-weight: bold;
+}
+
+/* Buttons */
+button {
+  padding: 6px 12px;
+  border: none;
+  background: #6c35a5;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #4e2679;
+}
+
+/* Sections */
+.section {
+  margin-top: 20px;
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+}
+
+.options label {
+  margin-right: 15px;
+}
+
+/* Table */
+.table {
+  margin-top: 30px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  background: #6c35a5;
+  color: white;
+  padding: 10px;
+}
+
+.table td {
+  background: #eee;
+  padding: 10px;
+  text-align: center;
+}
+
+/* Notes */
+.note {
+  margin-top: 20px;
+  background: #fff3a0;
+  padding: 10px;
+  border-radius: 5px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+  <!-- SR -->
+  <div class="sr-container">
+    <strong>SR :</strong>
+    <span id="srText" class="highlight"></span>
+    <button onclick="copySR()">Copy 📋</button>
+  </div>
+
+  <!-- Options -->
+  <div class="section">
+    <h3>Survey الحالة</h3>
+
+    <div class="options">
+      <p><b>Survey Completed?</b></p>
+      <label><input type="radio" name="survey" value="yes"> YES</label>
+      <label><input type="radio" name="survey" value="no"> NO</label>
+
+      <p><b>Error: Get FTTH Path API Failed?</b></p>
+      <label><input type="radio" name="api" value="yes"> YES</label>
+      <label><input type="radio" name="api" value="no"> NO</label>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <table class="table">
+    <tr>
+      <th>Case Type</th>
+      <th>SR Output</th>
+    </tr>
+    <tr>
+      <td>Survey Normal</td>
+      <td>FBB Non Tech follow up -> FTTH Migration -> Readiness - CST Informed</td>
+    </tr>
+    <tr>
+      <td>Survey Problem</td>
+      <td>FTTH Migration Issue -> No Free Port / API Failed</td>
+    </tr>
+  </table>
+
+  <!-- Note -->
+  <div class="note" id="noteBox" style="display:none;"></div>
+
+</div>
+
+<script>
+const inputs = document.querySelectorAll('input');
+inputs.forEach(i => i.addEventListener('change', generateSR));
+
+function generateSR() {
+  const survey = document.querySelector('input[name="survey"]:checked')?.value;
+  const api = document.querySelector('input[name="api"]:checked')?.value;
+
+  const srText = document.getElementById('srText');
+  const noteBox = document.getElementById('noteBox');
+
+  if (!survey || !api) return;
+
+  let message = '';
+  let note = '';
+
+  // الحالة 1: مشكلة API
+  if (api === 'yes') {
+    message = 'FTTH Migration Issue -> No Free Port / API Failed';
+    note = 'يتم إبلاغ العميل: لا توجد أماكن متاحة حالياً وسيتم المتابعة عند توفر إمكانية التركيب';
+  }
+
+  // الحالة 2: Survey طبيعي
+  else if (survey === 'yes' && api === 'no') {
+    message = 'FBB Non Tech follow up -> FTTH Migration -> Readiness - CST Informed';
+    note = 'تم إبلاغ العميل ببدء إجراءات الـ FTTH Migration خلال 7 أيام';
+  }
+
+  else {
+    message = 'Pending Survey Follow Up';
+    note = '';
+  }
+
+  srText.innerText = message;
+
+  if (note) {
+    noteBox.style.display = 'block';
+    noteBox.innerText = note;
+  } else {
+    noteBox.style.display = 'none';
+  }
+}
+
+// Copy
+function copySR() {
+  const text = document.getElementById('srText').innerText;
+  if (!text) return;
+
+  navigator.clipboard.writeText(text);
+  alert("Copied ✅");
+}
+</script>
+
+</body>
+</html>

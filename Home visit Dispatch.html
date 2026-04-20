@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CRM Payment Tool</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f5f5f5;
+  padding: 20px;
+}
+.container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 600px;
+  margin: auto;
+}
+.section {
+  margin-bottom: 15px;
+}
+#result {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 8px;
+  display: none;
+  font-weight: bold;
+  background: #f8d7da;
+}
+.note {
+  margin-top: 10px;
+  padding: 10px;
+  background: #e9ecef;
+  border-radius: 8px;
+  display: none;
+}
+button {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.copy { background: green; color: white; }
+.reset { background: red; color: white; }
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h3>CRM Payment (Home Visit Dispatch)</h3>
+
+<div class="section">
+<label>Home Visit Dispatch</label><br>
+<label><input type="radio" name="dispatch" value="yes"> Yes</label>
+<label><input type="radio" name="dispatch" value="no"> No</label>
+</div>
+
+<div class="section">
+<label>CRM Payment Issue</label><br>
+<label><input type="radio" name="crm" value="yes"> Yes</label>
+<label><input type="radio" name="crm" value="no"> No</label>
+</div>
+
+<div id="result"></div>
+<div id="note" class="note"></div>
+
+<button class="copy" onclick="copyResult()">Copy</button>
+<button class="reset" onclick="resetAll()">Reset</button>
+
+</div>
+
+<script>
+
+const inputs = document.querySelectorAll('input');
+inputs.forEach(i => i.addEventListener('change', generate));
+
+function generate() {
+  const dispatch = document.querySelector('input[name="dispatch"]:checked')?.value;
+  const crm = document.querySelector('input[name="crm"]:checked')?.value;
+
+  const result = document.getElementById("result");
+  const note = document.getElementById("note");
+
+  if (!dispatch || !crm) {
+    result.style.display = "none";
+    note.style.display = "none";
+    return;
+  }
+
+  if (dispatch === "yes" && crm === "yes") {
+    result.style.display = "block";
+    result.innerText =
+      "SR: FBB Non Tech follow up -> FTTH Migration -> CRM Payment failed CSO direction";
+
+    note.style.display = "block";
+    note.innerText =
+      "وجه العميل للـ CSO لدفع الرسوم. لا تقم بإغلاق الـ TT إلا بعد التأكيد من الدفع.";
+  } else {
+    result.style.display = "block";
+    result.innerText = "No action required";
+    note.style.display = "none";
+  }
+}
+
+function copyResult() {
+  const text = document.getElementById("result").innerText;
+  if (!text) return;
+  navigator.clipboard.writeText(text);
+  alert("Copied!");
+}
+
+function resetAll() {
+  document.querySelectorAll('input').forEach(i => i.checked = false);
+  document.getElementById("result").style.display = "none";
+  document.getElementById("note").style.display = "none";
+}
+
+</script>
+
+</body>
+</html>
