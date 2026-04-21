@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>FTTH Ultimate System</title>
+<title>FTTH PRO MAX COMPLETE</title>
 
 <style>
 :root{
@@ -15,9 +15,9 @@
 }
 
 body{
- font-family:'Segoe UI',sans-serif;
- background:linear-gradient(135deg,#e6ecf5,#f8fafc);
  margin:0;
+ font-family:'Segoe UI';
+ background:linear-gradient(135deg,#e6ecf5,#f8fafc);
  color:var(--text);
 }
 
@@ -25,7 +25,7 @@ body{
 header{
  background:linear-gradient(90deg,#111,#1f2937);
  color:#fff;
- padding:18px;
+ padding:15px;
  text-align:center;
 }
 
@@ -38,7 +38,7 @@ header{
 }
 
 .tabs button{
- padding:7px 12px;
+ padding:6px 12px;
  border:none;
  border-radius:20px;
  background:#fff;
@@ -61,7 +61,7 @@ header{
 }
 
 /* Notes */
-.notes{
+#notes{
  margin:10px;
  padding:15px;
  background:var(--card);
@@ -99,14 +99,14 @@ button{
 
 <body>
 
-<header>🔥 FTTH Ultimate System</header>
+<header>🔥 FTTH PRO MAX COMPLETE SYSTEM</header>
 
 <div class="tabs">
-<button onclick="loadTab('survey')">Survey</button>
-<button onclick="loadTab('unreached')">Unreached</button>
-<button onclick="loadTab('dispatch')">Dispatch</button>
-<button onclick="loadTab('overall')">Overall</button>
-<button onclick="loadTab('delay')">🚨 Delay Monitor</button>
+<button onclick="loadTab('survey',this)">Survey</button>
+<button onclick="loadTab('unreached',this)">Unreached</button>
+<button onclick="loadTab('dispatch',this)">Dispatch</button>
+<button onclick="loadTab('overall',this)">Overall</button>
+<button onclick="loadTab('delay',this)">🚨 Delay Monitor</button>
 </div>
 
 <div id="statusBar">Ready</div>
@@ -115,17 +115,19 @@ button{
 📅 Start Date: <input type="date" id="date">
 </div>
 
-<div id="notes" class="notes"></div>
+<div id="notes"></div>
 
 <div style="padding:10px">
 <button onclick="copy()">Copy</button>
+<button onclick="generateTT()">Generate TT</button>
+<button onclick="runAI()">AI</button>
 </div>
 
 <script>
 let current="";
 let alertShown={};
 
-/* Notification */
+/* Notify */
 function notify(msg){
  let n=document.createElement("div");
  n.className="notify";
@@ -136,9 +138,10 @@ function notify(msg){
 
 /* Color */
 function color(d){
- if(d<2)return"green";
- if(d<4)return"orange";
- return"red";
+ if(d<2)return"#22c55e";
+ if(d<4)return"#facc15";
+ if(d<5)return"#fb923c";
+ return"#ef4444";
 }
 
 /* Tracking */
@@ -148,7 +151,7 @@ setInterval(()=>{
  let d=Math.floor((new Date()-new Date(date.value))/(1000*60*60*24));
  let delayed=d>=5;
 
- statusBar.innerHTML=`Days: ${d} | ${delayed?"🚨 Delayed":"Active"}`;
+ statusBar.innerHTML=`Start: ${date.value} | Days: ${d} | ${delayed?"🚨 Delayed":"⏳ Active"}`;
  statusBar.style.background=color(d);
 
  if(delayed&&!alertShown[current]){
@@ -158,7 +161,7 @@ setInterval(()=>{
 
 },1000);
 
-/* Data FULL */
+/* DATA FULL */
 let data={
 
 survey:`⚠️ Survey / Resurvey Delay
@@ -177,7 +180,7 @@ Status: Waiting for action - Activation Team`,
 unreached:`⚠️ Unreached Survey Delay
 
 في حالة عدم الوصول للعميل أو فشل الزيارة
-مع تأخر تنفيذ الطلب
+مع تأخر التنفيذ
 
 Category: FBB Non-Technical Complaint
 Subcategory: Migration - Installation
@@ -217,13 +220,11 @@ Status: Waiting for action - Activation Team`,
 
 delay:`🚨 Monitoring Delay Cases
 
-متابعة كل الحالات المتأخرة
-
 Steps:
 1. مراجعة الحالات التي تجاوزت 5 أيام
 2. التأكد من إنشاء TT
-3. متابعة مع Activation Team
-4. تحديث العميل بالحالة
+3. Follow Up مع Activation
+4. تحديث العميل
 
 Priority: High`
 };
@@ -244,15 +245,48 @@ function format(t){
 }
 
 /* Load */
-function loadTab(t){
+function loadTab(t,btn){
  current=t;
  notes.innerHTML=format(data[t]);
+
+ document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+ btn.classList.add("active");
 }
 
 /* Copy */
 function copy(){
  navigator.clipboard.writeText(notes.innerText);
  notify("Copied");
+}
+
+/* TT */
+function generateTT(){
+ let d=Math.floor((new Date()-new Date(date.value))/(1000*60*60*24));
+ let id="TT-"+Date.now();
+
+ let txt=`ID:${id}
+Days:${d}
+
+${notes.innerText}`;
+
+ navigator.clipboard.writeText(txt);
+ notify("TT Copied");
+}
+
+/* AI */
+function runAI(){
+ let text=notes.innerText.toLowerCase();
+ let out="";
+
+ if(text.includes("fiber")) out="Survey Case";
+ else if(text.includes("dispatch")) out="Dispatch Case";
+ else if(text.includes("overall")) out="Overall Delay";
+ else out="Unknown";
+
+ if(text.includes("delay"))
+  out+="\nAction: Create TT";
+
+ notify(out);
 }
 </script>
 
