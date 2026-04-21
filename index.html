@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>FTTH PRO MAX COMPLETE</title>
+<title>FTTH Master Tool</title>
 
 <style>
 :root{
@@ -74,6 +74,13 @@ header{
 .key{color:#2563eb;font-weight:bold;}
 .title{color:#ef4444;font-weight:bold;}
 
+/* Frame */
+iframe{
+ width:100%;
+ height:60vh;
+ border:none;
+}
+
 /* Notification */
 .notify{
  position:fixed;
@@ -84,29 +91,26 @@ header{
  padding:10px;
  border-radius:6px;
 }
-
-/* Buttons */
-button{
- margin:5px;
- padding:6px 10px;
- border:none;
- border-radius:6px;
- cursor:pointer;
-}
 </style>
 
 </head>
 
 <body>
 
-<header>🔥 FTTH PRO MAX COMPLETE SYSTEM</header>
+<header>🔥 FTTH MASTER TOOL</header>
 
 <div class="tabs">
-<button onclick="loadTab('survey',this)">Survey</button>
-<button onclick="loadTab('unreached',this)">Unreached</button>
-<button onclick="loadTab('dispatch',this)">Dispatch</button>
-<button onclick="loadTab('overall',this)">Overall</button>
-<button onclick="loadTab('delay',this)">🚨 Delay Monitor</button>
+<button onclick="openTab('Direct to CSO.html',this)">Direct to CSO</button>
+<button onclick="openTab('Network Activation.html',this)">Network Activation</button>
+<button onclick="openTab('Check CPE SN Activity.html',this)">Check CPE</button>
+<button onclick="openTab('Home Visit De-activation.html',this)">MSAN Deactivation</button>
+<button onclick="openTab('Home Visit Grace Period.html',this)">Home Visit Grace</button>
+<button onclick="openTab('Home visit Dispatch.html',this)">Dispatch</button>
+<button onclick="openTab('Unreached Survey.html',this)">Unreached</button>
+<button onclick="openTab('Survey and Resurvey.html',this)">Survey</button>
+<button onclick="openTab('Customer readiness notification.html',this)">Readiness</button>
+<button onclick="openTab('Deactivated on CST 360.html',this)">CST360</button>
+<button onclick="openTab('Overall Delay',this)">🚨 Overall</button>
 </div>
 
 <div id="statusBar">Ready</div>
@@ -117,11 +121,7 @@ button{
 
 <div id="notes"></div>
 
-<div style="padding:10px">
-<button onclick="copy()">Copy</button>
-<button onclick="generateTT()">Generate TT</button>
-<button onclick="runAI()">AI</button>
-</div>
+<iframe id="frame"></iframe>
 
 <script>
 let current="";
@@ -151,7 +151,7 @@ setInterval(()=>{
  let d=Math.floor((new Date()-new Date(date.value))/(1000*60*60*24));
  let delayed=d>=5;
 
- statusBar.innerHTML=`Start: ${date.value} | Days: ${d} | ${delayed?"🚨 Delayed":"⏳ Active"}`;
+ statusBar.innerHTML=`Days: ${d} | ${delayed?"🚨 Delayed":"⏳ Active"}`;
  statusBar.style.background=color(d);
 
  if(delayed&&!alertShown[current]){
@@ -161,26 +161,12 @@ setInterval(()=>{
 
 },1000);
 
-/* DATA FULL */
-let data={
+/* NOTES FULL */
+let notesData={
 
-survey:`⚠️ Survey / Resurvey Delay
+"Survey and Resurvey.html":`⚠️ Survey Delay
 
-في حالة تجاوز مدة التركيب في هذه المرحلة
-
-Category: FBB Non-Technical Complaint
-Subcategory: Migration - Installation
-Type: FO-Fiber - Delay
-Action: Create
-
-Assign To: Activation Follow Up
-SLA: 4 Hours
-Status: Waiting for action - Activation Team`,
-
-unreached:`⚠️ Unreached Survey Delay
-
-في حالة عدم الوصول للعميل أو فشل الزيارة
-مع تأخر التنفيذ
+في حالة تجاوز مدة التركيب
 
 Category: FBB Non-Technical Complaint
 Subcategory: Migration - Installation
@@ -191,9 +177,22 @@ Assign To: Activation Follow Up
 SLA: 4 Hours
 Status: Waiting for action - Activation Team`,
 
-dispatch:`⚠️ Home Visit Dispatch Delay
+"Unreached Survey.html":`⚠️ Unreached Survey
 
-في حالة التأخير في مرحلة Home Visit Dispatch
+في حالة عدم الوصول للعميل
+
+Category: FBB Non-Technical Complaint
+Subcategory: Migration - Installation
+Type: FO-Fiber - Delay
+Action: Create
+
+Assign To: Activation Follow Up
+SLA: 4 Hours
+Status: Waiting for action - Activation Team`,
+
+"Home visit Dispatch.html":`⚠️ Dispatch Delay
+
+في حالة التأخير في الزيارة
 
 Category: Complaint
 Subcategory: Migration - Installation
@@ -204,10 +203,9 @@ Assign To: Activation Follow Up
 SLA: 4 Hours
 Status: Waiting for action - Activation Team`,
 
-overall:`🚨 Overall Installation Delay
+"Overall Delay":`🚨 Overall Delay
 
-في حالة وجود تأخير في إجمالي مدة التركيب
-مع أن المرحلة الحالية داخل SLA
+تأخير في إجمالي التركيب
 
 Category: FBB Non-Technical Complaint
 Subcategory: Migration - Installation
@@ -216,17 +214,8 @@ Action: Create
 
 Assign To: Activation Follow Up
 SLA: 4 Hours
-Status: Waiting for action - Activation Team`,
+Status: Waiting for action - Activation Team`
 
-delay:`🚨 Monitoring Delay Cases
-
-Steps:
-1. مراجعة الحالات التي تجاوزت 5 أيام
-2. التأكد من إنشاء TT
-3. Follow Up مع Activation
-4. تحديث العميل
-
-Priority: High`
 };
 
 /* Format */
@@ -244,49 +233,16 @@ function format(t){
  return h;
 }
 
-/* Load */
-function loadTab(t,btn){
- current=t;
- notes.innerHTML=format(data[t]);
+/* Open Tab */
+function openTab(page,btn){
+ current=page;
+ frame.src=page;
+
+ let text=notesData[page]||"";
+ notes.innerHTML=format(text);
 
  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
  btn.classList.add("active");
-}
-
-/* Copy */
-function copy(){
- navigator.clipboard.writeText(notes.innerText);
- notify("Copied");
-}
-
-/* TT */
-function generateTT(){
- let d=Math.floor((new Date()-new Date(date.value))/(1000*60*60*24));
- let id="TT-"+Date.now();
-
- let txt=`ID:${id}
-Days:${d}
-
-${notes.innerText}`;
-
- navigator.clipboard.writeText(txt);
- notify("TT Copied");
-}
-
-/* AI */
-function runAI(){
- let text=notes.innerText.toLowerCase();
- let out="";
-
- if(text.includes("fiber")) out="Survey Case";
- else if(text.includes("dispatch")) out="Dispatch Case";
- else if(text.includes("overall")) out="Overall Delay";
- else out="Unknown";
-
- if(text.includes("delay"))
-  out+="\nAction: Create TT";
-
- notify(out);
 }
 </script>
 
