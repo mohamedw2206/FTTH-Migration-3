@@ -3,13 +3,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>FTTH Master Tool</title>
+<title>FTTH Smart System FINAL</title>
 
 <style>
 :root{
- --bg:#eef2f7;
- --card:rgba(255,255,255,0.75);
- --text:#111;
  --primary:#2563eb;
  --danger:#ef4444;
 }
@@ -17,13 +14,12 @@
 body{
  margin:0;
  font-family:'Segoe UI';
- background:linear-gradient(135deg,#e6ecf5,#f8fafc);
- color:var(--text);
+ background:#eef2f7;
 }
 
 /* Header */
 header{
- background:linear-gradient(90deg,#111,#1f2937);
+ background:#111;
  color:#fff;
  padding:15px;
  text-align:center;
@@ -60,28 +56,44 @@ header{
  text-align:center;
 }
 
+/* Blink */
+@keyframes blink{
+ 0%{opacity:1;}
+ 50%{opacity:0.3;}
+ 100%{opacity:1;}
+}
+
+.blink{
+ animation:blink 1s infinite;
+}
+
 /* Notes */
 #notes{
  margin:10px;
  padding:15px;
- background:var(--card);
+ background:#fff;
  border-radius:12px;
  line-height:1.7;
- white-space:pre-wrap;
 }
 
-/* Highlight */
-.key{color:#2563eb;font-weight:bold;}
-.title{color:#ef4444;font-weight:bold;}
+/* Delay Message */
+#delayNoteBox{
+ display:none;
+ margin:10px;
+ padding:15px;
+ border-radius:12px;
+ background:#fee2e2;
+ border-left:6px solid #ef4444;
+}
 
-/* Frame */
+/* iframe */
 iframe{
  width:100%;
  height:60vh;
  border:none;
 }
 
-/* Notification */
+/* Notify */
 .notify{
  position:fixed;
  top:20px;
@@ -97,7 +109,7 @@ iframe{
 
 <body>
 
-<header>🔥 FTTH MASTER TOOL</header>
+<header>🔥 FTTH SMART SYSTEM FINAL</header>
 
 <div class="tabs">
 <button onclick="openTab('Direct to CSO.html',this)">Direct to CSO</button>
@@ -110,6 +122,7 @@ iframe{
 <button onclick="openTab('Survey and Resurvey.html',this)">Survey</button>
 <button onclick="openTab('Customer readiness notification.html',this)">Readiness</button>
 <button onclick="openTab('Deactivated on CST 360.html',this)">CST360</button>
+<button onclick="openTab('Delay Monitor.html',this)">🚨 Delay Monitor</button>
 <button onclick="openTab('Overall Delay',this)">🚨 Overall</button>
 </div>
 
@@ -120,6 +133,12 @@ iframe{
 </div>
 
 <div id="notes"></div>
+
+<div id="delayNoteBox">
+  <div style="font-weight:bold;margin-bottom:6px;">🚨 رسالة للعميل</div>
+  <div id="delayMsg"></div>
+  <button onclick="copyDelayMsg()">📋 Copy</button>
+</div>
 
 <iframe id="frame"></iframe>
 
@@ -154,45 +173,52 @@ setInterval(()=>{
  statusBar.innerHTML=`Days: ${d} | ${delayed?"🚨 Delayed":"⏳ Active"}`;
  statusBar.style.background=color(d);
 
+ if(delayed){
+  statusBar.classList.add("blink");
+ }else{
+  statusBar.classList.remove("blink");
+ }
+
  if(delayed&&!alertShown[current]){
   notify("🚨 Case تجاوزت 5 أيام");
   alertShown[current]=true;
  }
 
+ let msg = delayMessages[current] || delayMessages["Overall Delay"];
+
+ if(delayed){
+  delayNoteBox.style.display="block";
+  delayMsg.innerText=msg;
+ }else{
+  delayNoteBox.style.display="none";
+ }
+
 },1000);
 
-/* NOTES FULL */
+/* Notes */
 let notesData={
 
 "Survey and Resurvey.html":`⚠️ Survey Delay
 
-في حالة تجاوز مدة التركيب
-
 Category: FBB Non-Technical Complaint
 Subcategory: Migration - Installation
 Type: FO-Fiber - Delay
 Action: Create
 
 Assign To: Activation Follow Up
-SLA: 4 Hours
 Status: Waiting for action - Activation Team`,
 
 "Unreached Survey.html":`⚠️ Unreached Survey
 
-في حالة عدم الوصول للعميل
-
 Category: FBB Non-Technical Complaint
 Subcategory: Migration - Installation
 Type: FO-Fiber - Delay
 Action: Create
 
 Assign To: Activation Follow Up
-SLA: 4 Hours
 Status: Waiting for action - Activation Team`,
 
 "Home visit Dispatch.html":`⚠️ Dispatch Delay
-
-في حالة التأخير في الزيارة
 
 Category: Complaint
 Subcategory: Migration - Installation
@@ -200,12 +226,9 @@ Type: FTTH-Support - Delay
 Action: Create
 
 Assign To: Activation Follow Up
-SLA: 4 Hours
 Status: Waiting for action - Activation Team`,
 
 "Overall Delay":`🚨 Overall Delay
-
-تأخير في إجمالي التركيب
 
 Category: FBB Non-Technical Complaint
 Subcategory: Migration - Installation
@@ -213,8 +236,24 @@ Type: Over all Delay
 Action: Create
 
 Assign To: Activation Follow Up
-SLA: 4 Hours
 Status: Waiting for action - Activation Team`
+
+};
+
+/* Messages */
+let delayMessages={
+
+"Survey and Resurvey.html":`نعتذر لحضرتك عن التأخير في تنفيذ طلب المعاينة،
+جارٍ المتابعة مع الفريق المختص لتحديد موعد جديد قريب.`,
+
+"Unreached Survey.html":`نعتذر لعدم التمكن من الوصول،
+وسيتم إعادة المحاولة والتواصل مع حضرتك.`,
+
+"Home visit Dispatch.html":`نعتذر عن تأخير الزيارة،
+جارٍ التنسيق مع الفريق لتحديد أقرب موعد.`,
+
+"Overall Delay":`نعتذر عن التأخير في تنفيذ الطلب بالكامل،
+جارٍ التصعيد والمتابعة لإنهاء الخدمة سريعاً.`
 
 };
 
@@ -224,25 +263,30 @@ function format(t){
  let h="";
  lines.forEach(l=>{
   if(l.includes("⚠️")||l.includes("🚨"))
-   h+=`<div class="title">${l}</div>`;
+   h+=`<div style="color:red;font-weight:bold">${l}</div>`;
   else if(l.includes(":")){
    let p=l.split(":");
-   h+=`<div><span class="key">${p[0]}:</span> ${p.slice(1).join(":")}</div>`;
+   h+=`<div><b style="color:#2563eb">${p[0]}:</b> ${p.slice(1).join(":")}</div>`;
   }else h+=`<div>${l}</div>`;
  });
  return h;
 }
 
-/* Open Tab */
+/* Open */
 function openTab(page,btn){
  current=page;
  frame.src=page;
 
- let text=notesData[page]||"";
- notes.innerHTML=format(text);
+ notes.innerHTML=format(notesData[page]||"");
 
  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
  btn.classList.add("active");
+}
+
+/* Copy */
+function copyDelayMsg(){
+ navigator.clipboard.writeText(delayMsg.innerText);
+ notify("تم النسخ");
 }
 </script>
 
