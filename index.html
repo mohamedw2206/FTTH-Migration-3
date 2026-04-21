@@ -5,208 +5,126 @@
 <title>FTTH Smart Tools Dashboard</title>
 
 <style>
-body {
-  font-family: Arial;
-  background: #f0f2f5;
-  margin: 0;
-}
+body {font-family: Arial; background:#f0f2f5; margin:0;}
+header {background:#343a40;color:#fff;padding:15px;text-align:center;}
 
-header {
-  background: #343a40;
-  color: white;
-  padding: 15px;
-  text-align: center;
-}
+.tabs {display:flex;flex-wrap:wrap;background:#fff;border-bottom:2px solid #ddd;}
+.tabs button {padding:10px;border:none;background:none;cursor:pointer;}
+.tabs button.activeTab {background:#007bff;color:#fff;}
 
-.tabs {
-  display: flex;
-  flex-wrap: wrap;
-  background: #fff;
-  border-bottom: 2px solid #ddd;
-}
+#statusBar {color:#fff;padding:8px;text-align:center;font-weight:bold;}
 
-.tabs button {
-  padding: 10px 15px;
-  border: none;
-  background: none;
-  cursor: pointer;
-}
+.date-box {padding:8px;background:#fff;border-bottom:1px solid #ddd;}
 
-.tabs button:hover { background: #eee; }
+.notes-box {background:#fff;padding:10px;}
+#notes {min-height:140px;border:1px solid #ccc;padding:10px;line-height:1.5;}
 
-.tabs button.activeTab {
-  background-color: #007bff;
-  color: white;
-}
+.key {color:#007bff;font-weight:bold;}
+.title-line {color:#dc3545;font-weight:bold;}
 
-/* Status */
-#statusBar {
-  color:#fff;
-  padding:8px;
-  text-align:center;
-  font-weight:bold;
-}
+button {margin-top:5px;padding:5px 10px;cursor:pointer;}
+.copy {background:#28a745;color:#fff;border:none;}
+.gen {background:#6f42c1;color:#fff;border:none;}
 
-/* Date */
-.date-box {
-  padding:8px;
-  background:#fff;
-  border-bottom:1px solid #ddd;
-}
-
-/* Notes */
-.notes-box {
-  background:#fff;
-  padding:10px;
-}
-
-#notes {
-  width:100%;
-  min-height:140px;
-  padding:10px;
-  border:1px solid #ccc;
-  line-height:1.5;
-}
-
-/* Highlight */
-.key { color:#007bff; font-weight:bold; }
-.title-line { color:#dc3545; font-weight:bold; }
-
-iframe {
-  width:100%;
-  height:70vh;
-  border:none;
-}
-
-button.copy {
-  margin-top:5px;
-  padding:5px 10px;
-  background:#28a745;
-  color:#fff;
-  border:none;
-  cursor:pointer;
-}
+iframe {width:100%;height:65vh;border:none;}
 </style>
 </head>
 
 <body>
 
-<header>
-  <h2>🔥 FTTH Smart Tools Dashboard</h2>
-</header>
+<header><h2>🔥 FTTH Smart Tools Dashboard</h2></header>
 
 <div class="tabs">
-  <button onclick="loadTab('Direct to CSO.html'); setActiveTab(this)">Direct to CSO</button>
-  <button onclick="loadTab('Network Activation.html'); setActiveTab(this)">Network Activation</button>
-  <button onclick="loadTab('Check CPE SN Activity.html'); setActiveTab(this)">Check CPE</button>
-  <button onclick="loadTab('Home Visit De-activation.html'); setActiveTab(this)">MSAN Deactivation</button>
-  <button onclick="loadTab('Home Visit Grace Period.html'); setActiveTab(this)">Home Visit Grace</button>
-  <button onclick="loadTab('Home visit Dispatch.html'); setActiveTab(this)">Dispatch</button>
-  <button onclick="loadTab('Unreached Survey.html'); setActiveTab(this)">Unreached Survey</button>
-  <button onclick="loadTab('Survey De-activation.html'); setActiveTab(this)">Survey Deactivation</button>
-  <button onclick="loadTab('Survey grace period.html'); setActiveTab(this)">Survey Grace</button>
-  <button onclick="loadTab('Survey and Resurvey.html'); setActiveTab(this)">Survey</button>
-  <button onclick="loadTab('Customer readiness notification.html'); setActiveTab(this)">Readiness</button>
-  <button onclick="loadTab('Deactivated on CST 360.html'); setActiveTab(this)">CST360</button>
-  <button onclick="openDelay(); setActiveTab(this)">🚨 Delay Cases</button>
-  <button onclick="loadTab('Overall Delay'); setActiveTab(this)">🚨 Overall Delay</button>
+<button onclick="loadTab('Survey and Resurvey.html');setActiveTab(this)">Survey</button>
+<button onclick="loadTab('Unreached Survey.html');setActiveTab(this)">Unreached</button>
+<button onclick="loadTab('Home visit Dispatch.html');setActiveTab(this)">Dispatch</button>
+<button onclick="loadTab('Overall Delay');setActiveTab(this)">🚨 Overall</button>
 </div>
 
-<!-- Status -->
 <div id="statusBar">Loading...</div>
 
-<!-- Date -->
 <div class="date-box">
-  📅 Start Date:
-  <input type="date" id="startDate" onchange="saveDate()">
+📅 Start Date: <input type="date" id="startDate" onchange="saveDate()">
 </div>
 
-<!-- Notes -->
 <div class="notes-box">
-  <b>📒 Notes:</b>
-  <div id="notes" contenteditable="true"></div>
-  <button class="copy" onclick="copyNote()">Copy</button>
+<b>📒 Notes:</b>
+<div id="notes" contenteditable="true"></div>
+
+<button class="copy" onclick="copyNote()">Copy</button>
+<button class="gen" onclick="generateTT()">🎯 Generate TT</button>
 </div>
 
-<iframe id="frame" src="Direct to CSO.html"></iframe>
+<iframe id="frame"></iframe>
 
 <script>
-let currentTab = "Direct to CSO.html";
+let currentTab="";
 let interval;
-let alertShown = {};
+let alertShown={};
 
 /* Save Date */
 function saveDate(){
-  localStorage.setItem("date_"+currentTab, startDate.value);
+ localStorage.setItem("date_"+currentTab,startDate.value);
 }
 
-/* Gradient Color */
-function getColor(days){
-  if(days < 2) return "#28a745";
-  if(days < 4) return "#ffc107";
-  if(days < 5) return "#fd7e14";
-  return "#dc3545";
+/* Gradient */
+function getColor(d){
+ if(d<2)return"#28a745";
+ if(d<4)return"#ffc107";
+ if(d<5)return"#fd7e14";
+ return"#dc3545";
 }
 
 /* Tracking */
 function startTracking(){
-  clearInterval(interval);
+ clearInterval(interval);
 
-  let saved = localStorage.getItem("date_"+currentTab);
-  if(saved) startDate.value = saved;
+ let saved=localStorage.getItem("date_"+currentTab);
+ if(saved)startDate.value=saved;
 
-  interval = setInterval(()=>{
-    let val = startDate.value;
+ interval=setInterval(()=>{
+  if(!startDate.value){
+   statusBar.innerHTML="⚠️ Select Start Date";
+   statusBar.style.background="gray";
+   return;
+  }
 
-    if(!val){
-      statusBar.innerHTML = "⚠️ Please select start date";
-      statusBar.style.background = "gray";
-      return;
-    }
+  let start=new Date(startDate.value);
+  let now=new Date();
+  let days=Math.floor((now-start)/(1000*60*60*24));
+  let delayed=days>=5;
 
-    let start = new Date(val);
-    let now = new Date();
+  statusBar.innerHTML=
+  `Start: ${start.toLocaleDateString()} | Today: ${now.toLocaleDateString()} | Days: ${days} | ${delayed?"🚨 Delayed":"⏳ In Progress"}`;
 
-    let days = Math.floor((now - start)/(1000*60*60*24));
-    let delayed = days >= 5;
+  statusBar.style.background=getColor(days);
 
-    statusBar.innerHTML =
-      `Start: ${start.toLocaleDateString()} | Today: ${now.toLocaleDateString()} | Days: ${days} | ${delayed ? "🚨 Delayed" : "⏳ In Progress"}`;
+  if(delayed&&!alertShown[currentTab]){
+   alert("🚨 Case delayed >5 days!");
+   alertShown[currentTab]=true;
+  }
 
-    statusBar.style.background = getColor(days);
-
-    if(delayed && !alertShown[currentTab]){
-      alert("🚨 Case تجاوزت 5 أيام!");
-      alertShown[currentTab] = true;
-    }
-
-  },1000);
+ },1000);
 }
 
-/* Auto Highlight */
-function formatAuto(text){
-  let lines = text.split("\n");
-  let html = "";
-
-  lines.forEach(line=>{
-    if(line.includes("⚠️")||line.includes("🚨")){
-      html += `<div class="title-line">${line}</div>`;
-    }
-    else if(line.includes(":")){
-      let p=line.split(":");
-      html += `<div><span class="key">${p[0]}:</span> ${p.slice(1).join(":")}</div>`;
-    }
-    else{
-      html += `<div>${line}</div>`;
-    }
-  });
-
-  return html;
+/* Format */
+function formatAuto(t){
+ let lines=t.split("\n");
+ let h="";
+ lines.forEach(l=>{
+  if(l.includes("⚠️")||l.includes("🚨"))
+   h+=`<div class="title-line">${l}</div>`;
+  else if(l.includes(":")){
+   let p=l.split(":");
+   h+=`<div><span class="key">${p[0]}:</span> ${p.slice(1).join(":")}</div>`;
+  } else h+=`<div>${l}</div>`;
+ });
+ return h;
 }
 
 /* Data */
-let notesData = {
-"Survey and Resurvey.html": `⚠️ في حالة تجاوز مدة التركيب في هذه المرحلة:
+let notesData={
+"Survey and Resurvey.html":`⚠️ Survey Delay
 
 Category: FBB Non-Technical Complaint
 Subcategory: Migration - Installation
@@ -217,7 +135,7 @@ Assign To: Activation Follow Up
 SLA: 4 Hours
 Status: Waiting for action - Activation Team`,
 
-"Unreached Survey.html": `⚠️ في حالة تجاوز مدة التركيب في هذه المرحلة:
+"Unreached Survey.html":`⚠️ Unreached Delay
 
 Category: FBB Non-Technical Complaint
 Subcategory: Migration - Installation
@@ -228,7 +146,7 @@ Assign To: Activation Follow Up
 SLA: 4 Hours
 Status: Waiting for action - Activation Team`,
 
-"Home visit Dispatch.html": `⚠️ في حالة التأخير في مرحلة Home Visit Dispatch:
+"Home visit Dispatch.html":`⚠️ Dispatch Delay
 
 Category: Complaint
 Subcategory: Migration - Installation
@@ -239,10 +157,7 @@ Assign To: Activation Follow Up
 SLA: 4 Hours
 Status: Waiting for action - Activation Team`,
 
-"Overall Delay": `🚨 Delay in Overall Installation SLA:
-
-في حالة وجود تأخير في إجمالي مدة التركيب
-مع أن المرحلة الحالية داخل SLA
+"Overall Delay":`🚨 Overall Delay
 
 Category: FBB Non-Technical Complaint
 Subcategory: Migration - Installation
@@ -255,321 +170,91 @@ Status: Waiting for action - Activation Team`
 };
 
 /* Load */
-function loadTab(page){
-  localStorage.setItem(currentTab, notes.innerText);
+function loadTab(p){
+ currentTab=p;
+ frame.src=p;
 
-  currentTab = page;
-  frame.src = page;
+ let t=localStorage.getItem(p)||notesData[p]||"";
+ notes.innerHTML=formatAuto(t);
 
-  let text = localStorage.getItem(page) || notesData[page] || "";
-  notes.innerHTML = formatAuto(text);
-
-  startTracking();
+ startTracking();
 }
 
-function setActiveTab(btn){
-  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("activeTab"));
-  btn.classList.add("activeTab");
+/* Active */
+function setActiveTab(b){
+ document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("activeTab"));
+ b.classList.add("activeTab");
 }
 
-function openDelay(){
-  frame.src="updated_html_with_global_table_note.html";
-  notes.innerHTML="<div class='title-line'>🚨 Monitoring Delay Cases...</div>";
-  startTracking();
-}
-
+/* Copy */
 function copyNote(){
-  navigator.clipboard.writeText(notes.innerText);
-  alert("Copied ✅");
+ navigator.clipboard.writeText(notes.innerText);
+ alert("Copied ✅");
 }
+
+/* TT Generator */
+function generateTT(){
+
+ if(!startDate.value){
+  alert("⚠️ Choose Start Date");
+  return;
+ }
+
+ let days=Math.floor((new Date()-new Date(startDate.value))/(1000*60*60*24));
+ let delayed=days>=5;
+
+ let map={
+ "Survey and Resurvey.html":
+`FBB Non-Technical Complaint
+Migration - Installation
+FO-Fiber - Delay
+Create
+Activation Follow Up
+4 Hours
+Waiting for action-Activation Team`,
+
+ "Unreached Survey.html":
+`FBB Non-Technical Complaint
+Migration - Installation
+FO-Fiber - Delay
+Create
+Activation Follow Up
+4 Hours
+Waiting for action-Activation Team`,
+
+ "Home visit Dispatch.html":
+`Complaint
+Migration - Installation
+FTTH-Support - Delay
+Create
+Activation Follow Up
+4 Hours
+Waiting for action-Activation Team`,
+
+ "Overall Delay":
+`FBB Non-Technical Complaint
+Migration - Installation
+Over all Delay
+Create
+Activation Follow Up
+4 Hours
+Waiting for action-Activation Team`
+ };
+
+ let tt=map[currentTab]||"No Template";
+
+ let result=
+`===== TT =====
+Start: ${startDate.value}
+Days: ${days}
+Status: ${delayed?"DELAYED":"IN PROGRESS"}
+
+${tt}`;
+
+ navigator.clipboard.writeText(result);
+ alert("🎯 TT Copied");
+}
+
 </script>
-
-</body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>FTTH Smart Tools Dashboard</title>
-
-<style>
-body {
-  font-family: Arial;
-  background: #f0f2f5;
-  margin: 0;
-}
-
-header {
-  background: #343a40;
-  color: white;
-  padding: 15px;
-  text-align: center;
-}
-
-.tabs {
-  display: flex;
-  flex-wrap: wrap;
-  background: #fff;
-  border-bottom: 2px solid #ddd;
-}
-
-.tabs button {
-  padding: 10px 15px;
-  border: none;
-  background: none;
-  cursor: pointer;
-}
-
-.tabs button:hover { background: #eee; }
-
-.tabs button.activeTab {
-  background-color: #007bff;
-  color: white;
-}
-
-/* Status */
-#statusBar {
-  color:#fff;
-  padding:8px;
-  text-align:center;
-  font-weight:bold;
-}
-
-/* Date */
-.date-box {
-  padding:8px;
-  background:#fff;
-  border-bottom:1px solid #ddd;
-}
-
-/* Notes */
-.notes-box {
-  background:#fff;
-  padding:10px;
-}
-
-#notes {
-  width:100%;
-  min-height:140px;
-  padding:10px;
-  border:1px solid #ccc;
-  line-height:1.5;
-}
-
-/* Highlight */
-.key { color:#007bff; font-weight:bold; }
-.title-line { color:#dc3545; font-weight:bold; }
-
-iframe {
-  width:100%;
-  height:70vh;
-  border:none;
-}
-
-button.copy {
-  margin-top:5px;
-  padding:5px 10px;
-  background:#28a745;
-  color:#fff;
-  border:none;
-  cursor:pointer;
-}
-</style>
-</head>
-
-<body>
-
-<header>
-  <h2>🔥 FTTH Smart Tools Dashboard</h2>
-</header>
-
-<div class="tabs">
-  <button onclick="loadTab('Direct to CSO.html'); setActiveTab(this)">Direct to CSO</button>
-  <button onclick="loadTab('Network Activation.html'); setActiveTab(this)">Network Activation</button>
-  <button onclick="loadTab('Check CPE SN Activity.html'); setActiveTab(this)">Check CPE</button>
-  <button onclick="loadTab('Home Visit De-activation.html'); setActiveTab(this)">MSAN Deactivation</button>
-  <button onclick="loadTab('Home Visit Grace Period.html'); setActiveTab(this)">Home Visit Grace</button>
-  <button onclick="loadTab('Home visit Dispatch.html'); setActiveTab(this)">Dispatch</button>
-  <button onclick="loadTab('Unreached Survey.html'); setActiveTab(this)">Unreached Survey</button>
-  <button onclick="loadTab('Survey De-activation.html'); setActiveTab(this)">Survey Deactivation</button>
-  <button onclick="loadTab('Survey grace period.html'); setActiveTab(this)">Survey Grace</button>
-  <button onclick="loadTab('Survey and Resurvey.html'); setActiveTab(this)">Survey</button>
-  <button onclick="loadTab('Customer readiness notification.html'); setActiveTab(this)">Readiness</button>
-  <button onclick="loadTab('Deactivated on CST 360.html'); setActiveTab(this)">CST360</button>
-  <button onclick="openDelay(); setActiveTab(this)">🚨 Delay Cases</button>
-  <button onclick="loadTab('Overall Delay'); setActiveTab(this)">🚨 Overall Delay</button>
-</div>
-
-<!-- Status -->
-<div id="statusBar">Loading...</div>
-
-<!-- Date -->
-<div class="date-box">
-  📅 Start Date:
-  <input type="date" id="startDate" onchange="saveDate()">
-</div>
-
-<!-- Notes -->
-<div class="notes-box">
-  <b>📒 Notes:</b>
-  <div id="notes" contenteditable="true"></div>
-  <button class="copy" onclick="copyNote()">Copy</button>
-</div>
-
-<iframe id="frame" src="Direct to CSO.html"></iframe>
-
-<script>
-let currentTab = "Direct to CSO.html";
-let interval;
-let alertShown = {};
-
-/* Save Date */
-function saveDate(){
-  localStorage.setItem("date_"+currentTab, startDate.value);
-}
-
-/* Gradient Color */
-function getColor(days){
-  if(days < 2) return "#28a745";
-  if(days < 4) return "#ffc107";
-  if(days < 5) return "#fd7e14";
-  return "#dc3545";
-}
-
-/* Tracking */
-function startTracking(){
-  clearInterval(interval);
-
-  let saved = localStorage.getItem("date_"+currentTab);
-  if(saved) startDate.value = saved;
-
-  interval = setInterval(()=>{
-    let val = startDate.value;
-
-    if(!val){
-      statusBar.innerHTML = "⚠️ Please select start date";
-      statusBar.style.background = "gray";
-      return;
-    }
-
-    let start = new Date(val);
-    let now = new Date();
-
-    let days = Math.floor((now - start)/(1000*60*60*24));
-    let delayed = days >= 5;
-
-    statusBar.innerHTML =
-      `Start: ${start.toLocaleDateString()} | Today: ${now.toLocaleDateString()} | Days: ${days} | ${delayed ? "🚨 Delayed" : "⏳ In Progress"}`;
-
-    statusBar.style.background = getColor(days);
-
-    if(delayed && !alertShown[currentTab]){
-      alert("🚨 Case تجاوزت 5 أيام!");
-      alertShown[currentTab] = true;
-    }
-
-  },1000);
-}
-
-/* Auto Highlight */
-function formatAuto(text){
-  let lines = text.split("\n");
-  let html = "";
-
-  lines.forEach(line=>{
-    if(line.includes("⚠️")||line.includes("🚨")){
-      html += `<div class="title-line">${line}</div>`;
-    }
-    else if(line.includes(":")){
-      let p=line.split(":");
-      html += `<div><span class="key">${p[0]}:</span> ${p.slice(1).join(":")}</div>`;
-    }
-    else{
-      html += `<div>${line}</div>`;
-    }
-  });
-
-  return html;
-}
-
-/* Data */
-let notesData = {
-"Survey and Resurvey.html": `⚠️ في حالة تجاوز مدة التركيب في هذه المرحلة:
-
-Category: FBB Non-Technical Complaint
-Subcategory: Migration - Installation
-Type: FO-Fiber - Delay
-Action: Create
-
-Assign To: Activation Follow Up
-SLA: 4 Hours
-Status: Waiting for action - Activation Team`,
-
-"Unreached Survey.html": `⚠️ في حالة تجاوز مدة التركيب في هذه المرحلة:
-
-Category: FBB Non-Technical Complaint
-Subcategory: Migration - Installation
-Type: FO-Fiber - Delay
-Action: Create
-
-Assign To: Activation Follow Up
-SLA: 4 Hours
-Status: Waiting for action - Activation Team`,
-
-"Home visit Dispatch.html": `⚠️ في حالة التأخير في مرحلة Home Visit Dispatch:
-
-Category: Complaint
-Subcategory: Migration - Installation
-Type: FTTH-Support - Delay
-Action: Create
-
-Assign To: Activation Follow Up
-SLA: 4 Hours
-Status: Waiting for action - Activation Team`,
-
-"Overall Delay": `🚨 Delay in Overall Installation SLA:
-
-في حالة وجود تأخير في إجمالي مدة التركيب
-مع أن المرحلة الحالية داخل SLA
-
-Category: FBB Non-Technical Complaint
-Subcategory: Migration - Installation
-Type: Over all Delay
-Action: Create
-
-Assign To: Activation Follow Up
-SLA: 4 Hours
-Status: Waiting for action - Activation Team`
-};
-
-/* Load */
-function loadTab(page){
-  localStorage.setItem(currentTab, notes.innerText);
-
-  currentTab = page;
-  frame.src = page;
-
-  let text = localStorage.getItem(page) || notesData[page] || "";
-  notes.innerHTML = formatAuto(text);
-
-  startTracking();
-}
-
-function setActiveTab(btn){
-  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("activeTab"));
-  btn.classList.add("activeTab");
-}
-
-function openDelay(){
-  frame.src="updated_html_with_global_table_note.html";
-  notes.innerHTML="<div class='title-line'>🚨 Monitoring Delay Cases...</div>";
-  startTracking();
-}
-
-function copyNote(){
-  navigator.clipboard.writeText(notes.innerText);
-  alert("Copied ✅");
-}
-</script>
-
 </body>
 </html>
