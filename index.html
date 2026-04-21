@@ -3,13 +3,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>FTTH Smart Tools Dashboard</title>
+<title>FTTH Ultimate System</title>
 
 <style>
 :root{
  --bg:#eef2f7;
- --card:rgba(255,255,255,0.7);
- --glass:rgba(255,255,255,0.6);
+ --card:rgba(255,255,255,0.75);
  --text:#111;
  --primary:#2563eb;
  --danger:#ef4444;
@@ -39,20 +38,14 @@ header{
 }
 
 .tabs button{
- padding:7px 14px;
+ padding:7px 12px;
  border:none;
  border-radius:20px;
- background:var(--glass);
- backdrop-filter:blur(10px);
+ background:#fff;
  cursor:pointer;
- transition:.2s;
 }
 
-.tabs button:hover{
- transform:translateY(-2px);
-}
-
-.tabs button.activeTab{
+.tabs button.active{
  background:var(--primary);
  color:#fff;
 }
@@ -64,54 +57,22 @@ header{
  border-radius:10px;
  color:#fff;
  font-weight:bold;
- box-shadow:0 4px 12px rgba(0,0,0,.1);
-}
-
-/* Date */
-.date-box{
- margin:10px;
- padding:12px;
- border-radius:12px;
- background:var(--card);
- backdrop-filter:blur(10px);
- box-shadow:0 4px 10px rgba(0,0,0,.06);
+ text-align:center;
 }
 
 /* Notes */
-.notes-box{
+.notes{
  margin:10px;
- padding:12px;
- border-radius:12px;
+ padding:15px;
  background:var(--card);
- backdrop-filter:blur(10px);
- box-shadow:0 4px 12px rgba(0,0,0,.08);
-}
-
-#notes{
- border:none;
- outline:none;
- font-size:14px;
+ border-radius:12px;
  line-height:1.7;
+ white-space:pre-wrap;
 }
 
 /* Highlight */
-.key{color:var(--primary);font-weight:600;}
-.title-line{color:var(--danger);font-weight:700;font-size:15px;}
-
-/* Button */
-button.copy{
- margin-top:10px;
- padding:6px 12px;
- background:#10b981;
- color:#fff;
- border:none;
- border-radius:8px;
- cursor:pointer;
-}
-
-button.copy:hover{
- transform:scale(1.05);
-}
+.key{color:#2563eb;font-weight:bold;}
+.title{color:#ef4444;font-weight:bold;}
 
 /* Notification */
 .notify{
@@ -121,17 +82,16 @@ button.copy:hover{
  background:#ef4444;
  color:#fff;
  padding:10px;
- border-radius:8px;
+ border-radius:6px;
 }
 
-/* Frame */
-iframe{
- width:100%;
- height:70vh;
+/* Buttons */
+button{
+ margin:5px;
+ padding:6px 10px;
  border:none;
- border-radius:12px;
- margin-top:10px;
- box-shadow:0 4px 15px rgba(0,0,0,.1);
+ border-radius:6px;
+ cursor:pointer;
 }
 </style>
 
@@ -139,46 +99,31 @@ iframe{
 
 <body>
 
-<header>
-  <h2>🔥 FTTH Smart Tools Dashboard</h2>
-</header>
+<header>🔥 FTTH Ultimate System</header>
 
 <div class="tabs">
-  <button onclick="loadTab('Direct to CSO.html'); setActiveTab(this)">Direct to CSO</button>
-  <button onclick="loadTab('Network Activation.html'); setActiveTab(this)">Network Activation</button>
-  <button onclick="loadTab('Check CPE SN Activity.html'); setActiveTab(this)">Check CPE</button>
-  <button onclick="loadTab('Home Visit De-activation.html'); setActiveTab(this)">MSAN Deactivation</button>
-  <button onclick="loadTab('Home Visit Grace Period.html'); setActiveTab(this)">Home Visit Grace</button>
-  <button onclick="loadTab('Home visit Dispatch.html'); setActiveTab(this)">Dispatch</button>
-  <button onclick="loadTab('Unreached Survey.html'); setActiveTab(this)">Unreached Survey</button>
-  <button onclick="loadTab('Survey De-activation.html'); setActiveTab(this)">Survey Deactivation</button>
-  <button onclick="loadTab('Survey grace period.html'); setActiveTab(this)">Survey Grace</button>
-  <button onclick="loadTab('Survey and Resurvey.html'); setActiveTab(this)">Survey</button>
-  <button onclick="loadTab('Customer readiness notification.html'); setActiveTab(this)">Readiness</button>
-  <button onclick="loadTab('Deactivated on CST 360.html'); setActiveTab(this)">CST360</button>
-  <button onclick="openDelay(); setActiveTab(this)">🚨 Delay Cases</button>
-  <button onclick="loadTab('Overall Delay'); setActiveTab(this)">🚨 Overall Delay</button>
+<button onclick="loadTab('survey')">Survey</button>
+<button onclick="loadTab('unreached')">Unreached</button>
+<button onclick="loadTab('dispatch')">Dispatch</button>
+<button onclick="loadTab('overall')">Overall</button>
+<button onclick="loadTab('delay')">🚨 Delay Monitor</button>
 </div>
 
-<div id="statusBar">Loading...</div>
+<div id="statusBar">Ready</div>
 
-<div class="date-box">
-  📅 Start Date:
-  <input type="date" id="startDate" onchange="saveDate()">
+<div style="padding:10px">
+📅 Start Date: <input type="date" id="date">
 </div>
 
-<div class="notes-box">
-  <b>📒 Notes:</b>
-  <div id="notes" contenteditable="true"></div>
-  <button class="copy" onclick="copyNote()">Copy</button>
-</div>
+<div id="notes" class="notes"></div>
 
-<iframe id="frame" src="Direct to CSO.html"></iframe>
+<div style="padding:10px">
+<button onclick="copy()">Copy</button>
+</div>
 
 <script>
-let currentTab = "Direct to CSO.html";
-let interval;
-let alertShown = {};
+let current="";
+let alertShown={};
 
 /* Notification */
 function notify(msg){
@@ -189,78 +134,36 @@ function notify(msg){
  setTimeout(()=>n.remove(),3000);
 }
 
-/* Save Date */
-function saveDate(){
- localStorage.setItem("date_"+currentTab, startDate.value);
-}
-
 /* Color */
-function getColor(days){
- if(days < 2) return "#22c55e";
- if(days < 4) return "#facc15";
- if(days < 5) return "#fb923c";
- return "#ef4444";
+function color(d){
+ if(d<2)return"green";
+ if(d<4)return"orange";
+ return"red";
 }
 
 /* Tracking */
-function startTracking(){
- clearInterval(interval);
+setInterval(()=>{
+ if(!date.value)return;
 
- let saved = localStorage.getItem("date_"+currentTab);
- if(saved) startDate.value = saved;
+ let d=Math.floor((new Date()-new Date(date.value))/(1000*60*60*24));
+ let delayed=d>=5;
 
- interval = setInterval(()=>{
-  let val = startDate.value;
+ statusBar.innerHTML=`Days: ${d} | ${delayed?"🚨 Delayed":"Active"}`;
+ statusBar.style.background=color(d);
 
-  if(!val){
-   statusBar.innerHTML = "⚠️ Please select start date";
-   statusBar.style.background = "gray";
-   return;
-  }
+ if(delayed&&!alertShown[current]){
+  notify("🚨 Case تجاوزت 5 أيام");
+  alertShown[current]=true;
+ }
 
-  let start = new Date(val);
-  let now = new Date();
+},1000);
 
-  let days = Math.floor((now - start)/(1000*60*60*24));
-  let delayed = days >= 5;
+/* Data FULL */
+let data={
 
-  statusBar.innerHTML =
-   `Start: ${start.toLocaleDateString()} | Days: ${days} | ${delayed ? "🚨 Delayed" : "⏳ In Progress"}`;
+survey:`⚠️ Survey / Resurvey Delay
 
-  statusBar.style.background = getColor(days);
-
-  if(delayed && !alertShown[currentTab]){
-   notify("🚨 Case تجاوزت 5 أيام!");
-   alertShown[currentTab] = true;
-  }
-
- },1000);
-}
-
-/* Highlight */
-function formatAuto(text){
- let lines = text.split("\n");
- let html = "";
-
- lines.forEach(line=>{
-  if(line.includes("⚠️")||line.includes("🚨")){
-   html += `<div class="title-line">${line}</div>`;
-  }
-  else if(line.includes(":")){
-   let p=line.split(":");
-   html += `<div><span class="key">${p[0]}:</span> ${p.slice(1).join(":")}</div>`;
-  }
-  else{
-   html += `<div>${line}</div>`;
-  }
- });
-
- return html;
-}
-
-/* Data */
-let notesData = {
-"Survey and Resurvey.html": `⚠️ في حالة تجاوز مدة التركيب في هذه المرحلة:
+في حالة تجاوز مدة التركيب في هذه المرحلة
 
 Category: FBB Non-Technical Complaint
 Subcategory: Migration - Installation
@@ -271,7 +174,10 @@ Assign To: Activation Follow Up
 SLA: 4 Hours
 Status: Waiting for action - Activation Team`,
 
-"Unreached Survey.html": `⚠️ في حالة تجاوز مدة التركيب في هذه المرحلة:
+unreached:`⚠️ Unreached Survey Delay
+
+في حالة عدم الوصول للعميل أو فشل الزيارة
+مع تأخر تنفيذ الطلب
 
 Category: FBB Non-Technical Complaint
 Subcategory: Migration - Installation
@@ -282,7 +188,9 @@ Assign To: Activation Follow Up
 SLA: 4 Hours
 Status: Waiting for action - Activation Team`,
 
-"Home visit Dispatch.html": `⚠️ في حالة التأخير في مرحلة Home Visit Dispatch:
+dispatch:`⚠️ Home Visit Dispatch Delay
+
+في حالة التأخير في مرحلة Home Visit Dispatch
 
 Category: Complaint
 Subcategory: Migration - Installation
@@ -293,7 +201,7 @@ Assign To: Activation Follow Up
 SLA: 4 Hours
 Status: Waiting for action - Activation Team`,
 
-"Overall Delay": `🚨 Delay in Overall Installation SLA:
+overall:`🚨 Overall Installation Delay
 
 في حالة وجود تأخير في إجمالي مدة التركيب
 مع أن المرحلة الحالية داخل SLA
@@ -305,39 +213,46 @@ Action: Create
 
 Assign To: Activation Follow Up
 SLA: 4 Hours
-Status: Waiting for action - Activation Team`
+Status: Waiting for action - Activation Team`,
+
+delay:`🚨 Monitoring Delay Cases
+
+متابعة كل الحالات المتأخرة
+
+Steps:
+1. مراجعة الحالات التي تجاوزت 5 أيام
+2. التأكد من إنشاء TT
+3. متابعة مع Activation Team
+4. تحديث العميل بالحالة
+
+Priority: High`
 };
 
+/* Format */
+function format(t){
+ let lines=t.split("\n");
+ let h="";
+ lines.forEach(l=>{
+  if(l.includes("⚠️")||l.includes("🚨"))
+   h+=`<div class="title">${l}</div>`;
+  else if(l.includes(":")){
+   let p=l.split(":");
+   h+=`<div><span class="key">${p[0]}:</span> ${p.slice(1).join(":")}</div>`;
+  }else h+=`<div>${l}</div>`;
+ });
+ return h;
+}
+
 /* Load */
-function loadTab(page){
- localStorage.setItem(currentTab, notes.innerText);
-
- currentTab = page;
- frame.src = page;
-
- let text = localStorage.getItem(page) || notesData[page] || "";
- notes.innerHTML = formatAuto(text);
-
- startTracking();
-}
-
-/* Active */
-function setActiveTab(btn){
- document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("activeTab"));
- btn.classList.add("activeTab");
-}
-
-/* Delay Page */
-function openDelay(){
- frame.src="updated_html_with_global_table_note.html";
- notes.innerHTML="<div class='title-line'>🚨 Monitoring Delay Cases...</div>";
- startTracking();
+function loadTab(t){
+ current=t;
+ notes.innerHTML=format(data[t]);
 }
 
 /* Copy */
-function copyNote(){
+function copy(){
  navigator.clipboard.writeText(notes.innerText);
- notify("Copied ✅");
+ notify("Copied");
 }
 </script>
 
