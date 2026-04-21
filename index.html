@@ -3,91 +3,60 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Delay Monitor</title>
+<title>FTTH Smart System FINAL</title>
 
 <style>
-body {font-family: Arial; margin:0; padding:0;}
-
-#tabs {display:flex; background:#333;}
-#tabs button {
-  flex:1;
-  padding:10px;
-  background:#444;
-  color:#fff;
-  border:none;
-  cursor:pointer;
-}
-#tabs button:hover {background:#555;}
-
-#content {padding:15px;}
-
-/* GLOBAL NOTE */
-#globalNote {
-  background: #ffffff;
-  border: 1px solid #ccc;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 15px;
-  position: sticky;
-  top: 0;
-  z-index: 999;
+:root{
+ --primary:#2563eb;
+ --danger:#ef4444;
 }
 
-#globalNote h3 {color:#721c24;}
-#globalNote h4 {margin-top:15px;}
-
-.noteTable {
-  width:100%;
-  border-collapse: collapse;
-  margin-top:8px;
+body{
+ margin:0;
+ font-family:'Segoe UI';
+ background:#eef2f7;
 }
 
-.noteTable th {
-  background:#343a40;
-  color:#fff;
-  padding:8px;
-  font-size:13px;
-}
-
-.noteTable td {
-  border:1px solid #ddd;
-  padding:8px;
-  font-size:13px;
-}
-
-/* Colors */
-.noteTable tr.fo-delay td { background:#e3f2fd; }
-.noteTable tr.support-delay td { background:#e8f5e9; }
-.noteTable tr.sd-delay td { background:#fff3e0; }
-.noteTable tr.overall-delay td { background:#fce4ec; }
-
-.noteTable tr:nth-child(even) {background:#f2f2f2;}
-
-.noteHint {
-  background:#fff3cd;
-  padding:8px;
-  border-left:4px solid #ffc107;
-  margin-top:5px;
-  font-size:13px;
-}
-
-textarea {width:100%; height:120px;}
-
-/* ===== DELAY BOX ===== */
-#delayBox{
- position:fixed;
- bottom:20px;
- right:20px;
- padding:15px;
- border-radius:12px;
- font-weight:bold;
+/* Header */
+header{
+ background:#111;
  color:#fff;
- background:#22c55e;
- box-shadow:0 4px 12px rgba(0,0,0,.2);
+ padding:15px;
+ text-align:center;
 }
 
-/* BLINK */
+/* Tabs */
+.tabs{
+ display:flex;
+ flex-wrap:wrap;
+ gap:8px;
+ padding:10px;
+}
+
+.tabs button{
+ padding:6px 12px;
+ border:none;
+ border-radius:20px;
+ background:#fff;
+ cursor:pointer;
+}
+
+.tabs button.active{
+ background:var(--primary);
+ color:#fff;
+}
+
+/* Status */
+#statusBar{
+ margin:10px;
+ padding:10px;
+ border-radius:10px;
+ color:#fff;
+ font-weight:bold;
+ text-align:center;
+}
+
+/* Blink */
 @keyframes blink{
  0%{opacity:1;}
  50%{opacity:0.3;}
@@ -97,105 +66,228 @@ textarea {width:100%; height:120px;}
 .blink{
  animation:blink 1s infinite;
 }
+
+/* Notes */
+#notes{
+ margin:10px;
+ padding:15px;
+ background:#fff;
+ border-radius:12px;
+ line-height:1.7;
+}
+
+/* Delay Message */
+#delayNoteBox{
+ display:none;
+ margin:10px;
+ padding:15px;
+ border-radius:12px;
+ background:#fee2e2;
+ border-left:6px solid #ef4444;
+}
+
+/* iframe */
+iframe{
+ width:100%;
+ height:60vh;
+ border:none;
+}
+
+/* Notify */
+.notify{
+ position:fixed;
+ top:20px;
+ right:20px;
+ background:#ef4444;
+ color:#fff;
+ padding:10px;
+ border-radius:6px;
+}
 </style>
 
 </head>
 
 <body>
 
-<div id="tabs">
-  <button onclick="loadTab('tab1')">Tab 1</button>
-  <button onclick="loadTab('tab2')">Tab 2</button>
+<header>🔥 FTTH SMART SYSTEM FINAL</header>
+
+<div class="tabs">
+<button onclick="openTab('Direct to CSO.html',this)">Direct to CSO</button>
+<button onclick="openTab('Network Activation.html',this)">Network Activation</button>
+<button onclick="openTab('Check CPE SN Activity.html',this)">Check CPE</button>
+<button onclick="openTab('Home Visit De-activation.html',this)">MSAN Deactivation</button>
+<button onclick="openTab('Home Visit Grace Period.html',this)">Home Visit Grace</button>
+<button onclick="openTab('Home visit Dispatch.html',this)">Dispatch</button>
+<button onclick="openTab('Unreached Survey.html',this)">Unreached</button>
+<button onclick="openTab('Survey and Resurvey.html',this)">Survey</button>
+<button onclick="openTab('Customer readiness notification.html',this)">Readiness</button>
+<button onclick="openTab('Deactivated on CST 360.html',this)">CST360</button>
+<button onclick="openTab('Delay Monitor.html',this)">🚨 Delay Monitor</button>
+<button onclick="openTab('Overall Delay',this)">🚨 Overall</button>
 </div>
 
-<div id="content">
+<div id="statusBar">Ready</div>
 
-<div id="globalNote">
-  <h3>⚠️ ACTIVATION FOLLOW UP RULES</h3>
-
-  <h4>Survey / Resurvey / Unreached</h4>
-  <table class="noteTable">
-    <tr><th>Level 1</th><th>Level 2</th><th>Level 3</th><th>Action</th><th>SLA</th><th>2nd WG</th></tr>
-    <tr><td>FBB Non-Technical Complaint</td><td>New FTTH - Installation</td><td>FO-Fiber - Delay</td><td>Create Activation Follow Up</td><td>4 Hours</td><td>Activation Team</td></tr>
-    <tr><td>FBB Non-Technical Complaint</td><td>Migration - Installation</td><td>FO-Fiber - Delay</td><td>Create Activation Follow Up</td><td>4 Hours</td><td>Activation Team</td></tr>
-  </table>
-
-  <h4>Home Visit Dispatch Delay</h4>
-  <table class="noteTable">
-    <tr><th>Level 1</th><th>Level 2</th><th>Level 3</th><th>Action</th><th>SLA</th><th>2nd WG</th></tr>
-    <tr><td>FBB Non-Technical Complaint</td><td>New FTTH - Installation</td><td>FTTH-Support - Delay</td><td>Create Activation Follow Up</td><td>4 Hours</td><td>Activation Team</td></tr>
-    <tr><td>FBB Non-Technical Complaint</td><td>Migration - Installation</td><td>FTTH-Support - Delay</td><td>Create Activation Follow Up</td><td>4 Hours</td><td>Activation Team</td></tr>
-  </table>
-
-  <h4>Automatic Activity / Abnormal</h4>
-  <div class="noteHint">
-    Order > 1 hour in Automatic Activity & status = Executing<br>
-    ✔ Check Automatic TT or Abnormal status first
-  </div>
-
-  <table class="noteTable">
-    <tr><th>Level 1</th><th>Level 2</th><th>Level 3</th><th>Action</th><th>SLA</th><th>2nd WG</th></tr>
-    <tr><td>FBB Non-Technical Complaint</td><td>New FTTH - Installation</td><td>SD Team - Delay</td><td>Create Activation Follow Up</td><td>4 Hours</td><td>Activation Team</td></tr>
-    <tr><td>FBB Non-Technical Complaint</td><td>Migration - Installation</td><td>SD Team - Delay</td><td>Create Activation Follow Up</td><td>4 Hours</td><td>Activation Team</td></tr>
-  </table>
-
-  <h4>Overall Installation Delay</h4>
-  <table class="noteTable">
-    <tr><th>Level 1</th><th>Level 2</th><th>Level 3</th><th>Action</th><th>SLA</th><th>2nd WG</th></tr>
-    <tr><td>FBB Non-Technical Complaint</td><td>New FTTH - Installation</td><td>Over all Delay</td><td>Create Activation Follow Up</td><td>4 Hours</td><td>Activation Team</td></tr>
-    <tr><td>FBB Non-Technical Complaint</td><td>Migration - Installation</td><td>Over all Delay</td><td>Create Activation Follow Up</td><td>4 Hours</td><td>Activation Team</td></tr>
-  </table>
-
-  <h4>System Issue</h4>
-  <table class="noteTable">
-    <tr><th>Case</th><th>Action</th></tr>
-    <tr><td>Within SLA</td><td>Create</td></tr>
-    <tr><td>After SLA</td><td>Create</td></tr>
-  </table>
+<div style="padding:10px">
+📅 Start Date: <input type="date" id="date">
 </div>
 
-<textarea id="notes"></textarea>
+<div id="notes"></div>
 
+<div id="delayNoteBox">
+  <div style="font-weight:bold;margin-bottom:6px;">🚨 رسالة للعميل</div>
+  <div id="delayMsg"></div>
+  <button onclick="copyDelayMsg()">📋 Copy</button>
 </div>
 
-<!-- DELAY BOX -->
-
-<div id="delayBox">⏳ Tracking...</div>
+<iframe id="frame"></iframe>
 
 <script>
-let currentTab = '';
+let current="";
+let alertShown={};
 
-function loadTab(tab) {
-  currentTab = tab;
-  document.getElementById('notes').value = localStorage.getItem(tab) || '';
+/* Notify */
+function notify(msg){
+ let n=document.createElement("div");
+ n.className="notify";
+ n.innerText=msg;
+ document.body.appendChild(n);
+ setTimeout(()=>n.remove(),3000);
 }
 
-document.getElementById('notes').addEventListener('input', function() {
-  localStorage.setItem(currentTab, this.value);
-});
+/* Color */
+function color(d){
+ if(d<2)return"#22c55e";
+ if(d<4)return"#facc15";
+ if(d<5)return"#fb923c";
+ return"#ef4444";
+}
 
-/* ===== DELAY TRACKING ===== */
+/* Tracking */
 setInterval(()=>{
+ if(!date.value)return;
 
- let start = localStorage.getItem("globalStartDate");
- if(!start) return;
+ let d=Math.floor((new Date()-new Date(date.value))/(1000*60*60*24));
+ let delayed=d>=5;
 
- let d = Math.floor((new Date() - new Date(start)) / (1000*60*60*24));
- let delayed = d >= 5;
-
- let box = document.getElementById("delayBox");
-
- box.innerText = `Days: ${d} ${delayed ? "🚨 DELAY" : "⏳ OK"}`;
+ statusBar.innerHTML=`Days: ${d} | ${delayed?"🚨 Delayed":"⏳ Active"}`;
+ statusBar.style.background=color(d);
 
  if(delayed){
-   box.style.background = "#ef4444";
-   box.classList.add("blink");
+  statusBar.classList.add("blink");
  }else{
-   box.style.background = "#22c55e";
-   box.classList.remove("blink");
+  statusBar.classList.remove("blink");
+ }
+
+ if(delayed&&!alertShown[current]){
+  notify("🚨 Case تجاوزت 5 أيام");
+  alertShown[current]=true;
+ }
+
+ let msg = delayMessages[current] || delayMessages["Overall Delay"];
+
+ if(delayed){
+  delayNoteBox.style.display="block";
+  delayMsg.innerText=msg;
+ }else{
+  delayNoteBox.style.display="none";
  }
 
 },1000);
+
+/* Notes */
+let notesData={
+
+"Survey and Resurvey.html":`⚠️ Survey Delay
+
+Category: FBB Non-Technical Complaint
+Subcategory: Migration - Installation
+Type: FO-Fiber - Delay
+Action: Create
+
+Assign To: Activation Follow Up
+Status: Waiting for action - Activation Team`,
+
+"Unreached Survey.html":`⚠️ Unreached Survey
+
+Category: FBB Non-Technical Complaint
+Subcategory: Migration - Installation
+Type: FO-Fiber - Delay
+Action: Create
+
+Assign To: Activation Follow Up
+Status: Waiting for action - Activation Team`,
+
+"Home visit Dispatch.html":`⚠️ Dispatch Delay
+
+Category: Complaint
+Subcategory: Migration - Installation
+Type: FTTH-Support - Delay
+Action: Create
+
+Assign To: Activation Follow Up
+Status: Waiting for action - Activation Team`,
+
+"Overall Delay":`🚨 Overall Delay
+
+Category: FBB Non-Technical Complaint
+Subcategory: Migration - Installation
+Type: Over all Delay
+Action: Create
+
+Assign To: Activation Follow Up
+Status: Waiting for action - Activation Team`
+
+};
+
+/* Messages */
+let delayMessages={
+
+"Survey and Resurvey.html":`نعتذر لحضرتك عن التأخير في تنفيذ طلب المعاينة،
+جارٍ المتابعة مع الفريق المختص لتحديد موعد جديد قريب.`,
+
+"Unreached Survey.html":`نعتذر لعدم التمكن من الوصول،
+وسيتم إعادة المحاولة والتواصل مع حضرتك.`,
+
+"Home visit Dispatch.html":`نعتذر عن تأخير الزيارة،
+جارٍ التنسيق مع الفريق لتحديد أقرب موعد.`,
+
+"Overall Delay":`نعتذر عن التأخير في تنفيذ الطلب بالكامل،
+جارٍ التصعيد والمتابعة لإنهاء الخدمة سريعاً.`
+
+};
+
+/* Format */
+function format(t){
+ let lines=t.split("\n");
+ let h="";
+ lines.forEach(l=>{
+  if(l.includes("⚠️")||l.includes("🚨"))
+   h+=`<div style="color:red;font-weight:bold">${l}</div>`;
+  else if(l.includes(":")){
+   let p=l.split(":");
+   h+=`<div><b style="color:#2563eb">${p[0]}:</b> ${p.slice(1).join(":")}</div>`;
+  }else h+=`<div>${l}</div>`;
+ });
+ return h;
+}
+
+/* Open */
+function openTab(page,btn){
+ current=page;
+ frame.src=page;
+
+ notes.innerHTML=format(notesData[page]||"");
+
+ document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+ btn.classList.add("active");
+}
+
+/* Copy */
+function copyDelayMsg(){
+ navigator.clipboard.writeText(delayMsg.innerText);
+ notify("تم النسخ");
+}
 </script>
 
 </body>
